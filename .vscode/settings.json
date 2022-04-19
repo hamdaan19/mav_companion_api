@@ -1,0 +1,12 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/home/hamdaan/catkin_ws/devel/lib/python3/dist-packages",
+        "/home/hamdaan/ROS/voxblox_ws/devel/lib/python3/dist-packages",
+        "/opt/ros/noetic/lib/python3/dist-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/hamdaan/catkin_ws/devel/lib/python3/dist-packages",
+        "/home/hamdaan/ROS/voxblox_ws/devel/lib/python3/dist-packages",
+        "/opt/ros/noetic/lib/python3/dist-packages"
+    ]
+}

@@ -1,0 +1,49 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "",
+        "limitSymbolsToIncludedHeaders": true
+      },
+      "includePath": [
+        "/home/hamdaan/catkin_ws/devel/include/**",
+        "/home/hamdaan/ROS/voxblox_ws/devel/include/**",
+        "/opt/ros/noetic/include/**",
+        "/home/hamdaan/ROS/voxblox_ws/src/eigen_checks/include/**",
+        "/home/hamdaan/ROS/voxblox_ws/src/kitti_to_rosbag/kitti_to_rosbag/include/**",
+        "/home/hamdaan/catkin_ws/src/mavros/libmavconn/include/**",
+        "/home/hamdaan/ROS/voxblox_ws/src/mav_voxblox_planning/loco_planner/include/**",
+        "/home/hamdaan/ROS/voxblox_ws/src/mav_voxblox_planning/mav_local_planner/include/**",
+        "/home/hamdaan/ROS/voxblox_ws/src/mav_comm/mav_msgs/include/**",
+        "/home/hamdaan/ROS/voxblox_ws/src/mav_voxblox_planning/mav_path_smoothing/include/**",
+        "/home/hamdaan/ROS/voxblox_ws/src/mav_voxblox_planning/mav_planning_benchmark/include/**",
+        "/home/hamdaan/ROS/voxblox_ws/src/mav_voxblox_planning/mav_planning_common/include/**",
+        "/home/hamdaan/ROS/voxblox_ws/src/mav_comm/mav_planning_msgs/include/**",
+        "/home/hamdaan/ROS/voxblox_ws/src/mav_voxblox_planning/mav_planning_rviz/include/**",
+        "/home/hamdaan/ROS/voxblox_ws/src/mav_trajectory_generation/mav_trajectory_generation/include/**",
+        "/home/hamdaan/ROS/voxblox_ws/src/mav_trajectory_generation/mav_trajectory_generation_example/include/**",
+        "/home/hamdaan/ROS/voxblox_ws/src/mav_trajectory_generation/mav_trajectory_generation_ros/include/**",
+        "/home/hamdaan/ROS/voxblox_ws/src/mav_trajectory_generation/mav_visualization/include/**",
+        "/home/hamdaan/catkin_ws/src/mavros/mavros/include/**",
+        "/home/hamdaan/catkin_ws/src/mavros/mavros_msgs/include/**",
+        "/home/hamdaan/ROS/voxblox_ws/src/minkindr/minkindr/include/**",
+        "/home/hamdaan/ROS/voxblox_ws/src/minkindr_ros/minkindr_conversions/include/**",
+        "/home/hamdaan/ROS/voxblox_ws/src/nlopt/include/**",
+        "/home/hamdaan/ROS/voxblox_ws/src/numpy_eigen/include/**",
+        "/home/hamdaan/catkin_ws/src/mavros/test_mavros/include/**",
+        "/home/hamdaan/ROS/voxblox_ws/src/voxblox/voxblox/include/**",
+        "/home/hamdaan/ROS/voxblox_ws/src/voxblox_ground_truth/include/**",
+        "/home/hamdaan/ROS/voxblox_ws/src/mav_voxblox_planning/voxblox_loco_planner/include/**",
+        "/home/hamdaan/ROS/voxblox_ws/src/mav_voxblox_planning/voxblox_planning_common/include/**",
+        "/home/hamdaan/ROS/voxblox_ws/src/voxblox/voxblox_ros/include/**",
+        "/home/hamdaan/ROS/voxblox_ws/src/mav_voxblox_planning/voxblox_rrt_planner/include/**",
+        "/home/hamdaan/ROS/voxblox_ws/src/voxblox/voxblox_rviz_plugin/include/**",
+        "/home/hamdaan/ROS/voxblox_ws/src/mav_voxblox_planning/voxblox_skeleton/include/**",
+        "/home/hamdaan/ROS/voxblox_ws/src/mav_voxblox_planning/voxblox_skeleton_planner/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS"
+    }
+  ],
+  "version": 4
+}
