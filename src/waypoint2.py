@@ -33,6 +33,18 @@ def generate_waypoints():
     Y = 3
     for alt in np.arange(5, 25, 0.75):
         wp_list.append([X, Y, alt])
+    for y in np.arange(3, 10, 1):
+        wp_list.append([X, y, 25])
+    Y = 10
+    for x in np.arange(3, 10, 1):
+        wp_list.append([x, Y, 25])
+    X = 10
+    for y in np.arange(Y, 3, -1):
+        wp_list.append([X, y, 25])
+    Y = 0
+    for x in np.arange(X, 3, -1):
+        wp_list.append([x, Y, 25])
+
     return wp_list
 
 def get_distance(point):
@@ -56,6 +68,7 @@ def start_mission(wps):
         setpoint_msg.pose.position.z = point[2]
         goto_pub.publish(setpoint_msg)
         while(get_distance(point) > WAYPOINT_RADIUS):
+            res = set_mode(0, "OFFBOARD")
             goto_pub.publish(setpoint_msg)
             rate.sleep()
         rospy.loginfo(f"Arrived at waypoint {i}/{len(wps)}")
