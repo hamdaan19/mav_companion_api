@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import cv2
-from numpy.core.fromnumeric import shape
 import cv2.aruco as aruco
 from cv_bridge import CvBridge, CvBridgeError
 import numpy as np
@@ -57,8 +56,44 @@ class TargetTracker(object):
 
         return points
 
+    def draw_axis(self, frame, center_pt, axis_pts, wt=5):
+        cv2.line(frame, center_pt, tuple(axis_pts[0].ravel()), (255,0,0), wt)
+        cv2.line(frame, center_pt, tuple(axis_pts[1].ravel()), (0,255,0), wt)
+        cv2.line(frame, center_pt, tuple(axis_pts[2].ravel()), (0,0,255), wt)
 
-class Utils():
+    def undistort_point(self, points, cx, cy, fx, fy, distortion_params):
+        corrected_cartesian_pts = []
+        corrected_pixel_pts = []
+
+        for point in points:
+            u, v, depth = point
+
+            y_ = (u - cx)*depth/fx ## Interchanged x_ and y_
+            x_ = (v - cy)*depth/fy 
+
+            r = math.sqrt(x_**2 + y_**2)
+            k1, k2, p1, p2, k3 = distortion_params
+
+            x_rad = x_ * (1 + k1*(r**2) + k2*(r**4) + k3*(r**6))
+            y_rad = y_ * (1 + k1*(r**2) + k2*(r**4) + k3*(r**6))
+
+            # Tangential Distortion Effect
+            del_x_tan = 2*p1*x_*y_ + p2*((r**2) + 2*(x_**2))
+            del_y_tan = p1*(r**2 + 2*(y_**2)) + 2*p2*x_*y_ 
+
+            # # Plumb Bob Distortion Correction
+            x_corrected = x_rad + del_x_tan
+            y_corrected = y_rad + del_y_tan
+            v_corrected = (x_corrected*fx)/depth + cy # Interchanged u_corrected and v_corrected
+            u_corrected = (y_corrected*fy)/depth + cx # and cx and cy
+
+            corrected_cartesian_pts.append([x_corrected, y_corrected])
+            corrected_pixel_pts.append([u_corrected, v_corrected])
+
+        return (corrected_cartesian_pts, corrected_pixel_pts)
+
+
+class Utils(object):
     def __init__(self):
         super(Utils, self).__init__()
         self.bridge = CvBridge()
@@ -69,6 +104,9 @@ class Utils():
             return cv_image
         except CvBridgeError as e:
             print(e)
+
+    def cv2ros(self, array, encoding="bgr8"):
+        pass
 
     def display_image(self, names, frames):
         for name, frame in zip(names, frames):
@@ -83,6 +121,15 @@ class Utils():
         percent_uncertainty = np.true_divide(uncertainty, mean)*100
         percent_uncertainty = np.absolute(percent_uncertainty)
         return mean, np.around(uncertainty, decimals=3), percent_uncertainty, np.around(std, decimals=3)
+
+    def undistort(self, frame, cam_mtx, dist, frame_size):
+        # frame_size should be a tuple (width, height)
+        newcameramtx, roi = cv2.getOptimalNewCameraMatrix(cam_mtx, dist, frame_size, 1, frame_size)
+        dst = cv2.undistort(frame, cam_mtx, dist, None, newcameramtx)
+        x, y, w, h = roi
+        dst_roi = dst[y:y+h, x:x+w]
+        return dst, dst_roi
+
 
 
 def create_setpoint_message(X=0, Y=0, Z=0):

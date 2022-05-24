@@ -8,15 +8,20 @@ import time
 from mavros_msgs.srv import SetMode, CommandBool
 from utils import create_setpoint_message, get_distance, get_uncertain_init_point
 
-GOTO_INIT_POINT = False
+GOTO_INIT_POINT = True
 RANDOM_POINT = False
 ENGAGE_PREC_LANDING = True
 
 RAW_IMAGE_TOPIC = "/iris/usb_cam/image_raw"
 CAM_INFO = "/iris/usb_cam/camera_info"
+DIST_SENSOR_TOPIC = "/iris/laser/range"
+MARKER_ID = 70
+# GROUND_CLEARANCE = 0.3
+# UPDATE_COEFFICIENTS = [1,1,0.3]
+
 PUB_TOPIC_GOTO_POINT = "/mavros/setpoint_raw/local"
 UAV_STATE_TOPIC = "mavros/state"
-INIT_POINT = [3, 3, 15] 
+INIT_POINT = [3, 3, 20] 
 
 def state_callback(data):
     global conn_status 
@@ -81,8 +86,15 @@ def main():
             rospy.rostime.wallsleep(1/10)
 
     if ENGAGE_PREC_LANDING == True:
-        rospy.loginfo("Precision Landing Engaged")
-        start_prec_land = MarkerPose(raw_image_topic=RAW_IMAGE_TOPIC, cam_info=CAM_INFO, init_point=INIT_POINT)
+        start_prec_land = MarkerPose(
+            raw_image_topic=RAW_IMAGE_TOPIC, 
+            cam_info=CAM_INFO, 
+            distance_sensor_topic=DIST_SENSOR_TOPIC,
+            init_point=INIT_POINT,
+            marker_id=MARKER_ID,
+            #ground_clearance=GROUND_CLEARANCE,
+            #update_coeffs=UPDATE_COEFFICIENTS,
+            )
         start_prec_land.loop()
 
 if __name__ == '__main__':
