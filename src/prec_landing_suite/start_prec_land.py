@@ -16,7 +16,7 @@ RAW_IMAGE_TOPIC = "/iris/usb_cam/image_raw"
 CAM_INFO = "/iris/usb_cam/camera_info"
 DIST_SENSOR_TOPIC = "/iris/laser/range"
 MARKER_ID = 70
-# GROUND_CLEARANCE = 0.3
+# GROUND_CLEARANCE = 0.3 # 0.26
 # UPDATE_COEFFICIENTS = [1,1,0.3]
 
 PUB_TOPIC_GOTO_POINT = "/mavros/setpoint_raw/local"

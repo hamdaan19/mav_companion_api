@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import rospy
 import rospkg
-from sensor_msgs.msg import Image, LaserScan, CameraInfo
+from sensor_msgs.msg import Image, LaserScan, CameraInfo, Range
 from geometry_msgs.msg import Point, PointStamped, PoseStamped
 from utils import TargetTracker, Utils, create_setpoint_message
 from mavros_msgs.msg import PositionTarget, State
@@ -30,6 +30,7 @@ class MarkerPose(TargetTracker, Utils, CameraPose):
         super(MarkerPose, self).__init__()
         self.setpoint_pub = rospy.Publisher("/mavros/setpoint_raw/local", PositionTarget, queue_size=5)
         self.range_sub = rospy.Subscriber(distance_sensor_topic, LaserScan, self.get_range)
+        #self.range_sub = rospy.Subscriber(distance_sensor_topic, Range, self.get_range)
         self.sub1 = rospy.Subscriber(raw_image_topic, Image, self.retrieve_frame)
         self.sub_cam_info = rospy.Subscriber(cam_info, CameraInfo, self.callback_cam_info)
         self.sub3 = rospy.Subscriber("/mavros/local_position/pose", PoseStamped, self.get_pose)
@@ -139,6 +140,7 @@ class MarkerPose(TargetTracker, Utils, CameraPose):
 
     def get_range(self, data):
         self.range = data.ranges[0]
+        #self.range = data.range
 
     def get_uav_state(self, data):
         self.conn_status = data.connected
