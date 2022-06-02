@@ -202,11 +202,7 @@ class MarkerPose(TargetTracker, Utils, CameraPose):
         rospy.logwarn("ENGAGING PRECISION LANDING")
         while not rospy.core.is_shutdown():
             if self.AUTO_LAND == False:
-                try:
-                    if(self.current_mode != "OFFBOARD"):
-                        self.set_mode(0, "OFFBOARD")
-                except:
-                    pass
+        
                 self.setpoint_pub.publish(self.setpoint_msg)
             try:
                 if self.range < self.ground_clearance:
