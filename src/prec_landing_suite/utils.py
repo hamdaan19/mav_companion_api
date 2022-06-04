@@ -12,7 +12,7 @@ class TargetTracker(object):
         super(TargetTracker, self).__init__()
         pass
 
-    def detect_marker(self, image, marker_size=6, total_markers=250):
+    def detect_marker(self, image, marker_size=6, total_markers=1000):
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         method = getattr(aruco, f'DICT_{marker_size}X{marker_size}_{total_markers}')
         arucoDict = aruco.Dictionary_get(method)
