@@ -15,12 +15,14 @@ sys.path.insert(1, rp.get_path("mav_companion_api"))
 
 from src.prec_landing_suite.utils import Utils, TargetTracker
 
-MARKER_ID = 70
+MARKER_ID = 320
 bridge = CvBridge()
 
 def callback(data):
     cv_image = bridge.imgmsg_to_cv2(data, "bgr8")
     # raw_img = bridge.imgmsg_to_cv2(data, "bgr8")
+    cv_image = Utils().adjust_brightness_contrast(cv_image, alpha=1, beta=0)
+    cv_image = Utils().adjust_gamma(cv_image, gamma=0.5)
     box, id = TargetTracker().detect_marker(image=cv_image)
 
     # undistorted_img, roi_img = Utils().undistort(
@@ -46,8 +48,8 @@ def callback(data):
 
     
     # cv2.imshow("Undistorted Image", undistorted_img)
-    # cv2.imshow("Marker Detector", cv_image)
-    # cv2.waitKey(1)
+    cv2.imshow("Marker Detector", cv_image)
+    cv2.waitKey(1)
 
 def callback_cam_info(data):
     global distortion_params

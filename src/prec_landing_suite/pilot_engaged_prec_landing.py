@@ -24,6 +24,14 @@ def state_callback(data):
     conn_status = data.connected
     current_mode = data.mode
     armed = data.armed
+
+def pose_callback(data):
+    global posX
+    global posY
+    global posZ
+    posX = data.pose.position.x
+    posY = data.pose.position.y
+    posZ = data.pose.position.z
         
 
 def main():

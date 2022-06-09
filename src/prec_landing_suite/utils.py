@@ -130,6 +130,17 @@ class Utils(object):
         dst_roi = dst[y:y+h, x:x+w]
         return dst, dst_roi
 
+    def adjust_brightness_contrast(self, frame, alpha=1, beta=10):
+        result = cv2.addWeighted(frame, alpha, np.zeros(frame.shape, frame.dtype), 0, beta)
+        return result
+
+    def adjust_gamma(self, frame, gamma=1.0):
+        invGamma = 1.0 / gamma
+        table = np.array([((i / 255.0) ** invGamma) * 255
+            for i in np.arange(0, 256)]).astype("uint8")
+        # apply gamma correction using the lookup table
+        return cv2.LUT(frame, table)
+
 
 
 def create_setpoint_message(X=0, Y=0, Z=0):

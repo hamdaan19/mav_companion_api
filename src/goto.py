@@ -9,7 +9,7 @@ import time
 PUB_TOPIC = "/mavros/setpoint_raw/local"
 STATE_TOPIC = "mavros/state"
 
-GOTO_POINT = [0, 0, 50] # [X, Y, Z]
+GOTO_POINT = [0, 5, 10] # [X, Y, Z]
 
 def state_callback(data):
     global conn_status 
@@ -53,7 +53,7 @@ def main():
     rospy.loginfo("Vehicle armed")
     res1 = set_mode(0, "AUTO.TAKEOFF")
     rospy.loginfo("Mode set to AUTO.TAKEOFF")
-    for i in range(100):
+    for i in range(10):
         pub.publish(setpoint_msg)
         rospy.loginfo(f"Message published to topic: {PUB_TOPIC} - {i}")
         rate.sleep()
@@ -67,6 +67,7 @@ def main():
 
     while not rospy.is_shutdown():
         pub.publish(setpoint_msg)
+        res2 = set_mode(0, "OFFBOARD")
         rospy.loginfo(f"Message published to topic: {PUB_TOPIC}")
         rate.sleep()
 
