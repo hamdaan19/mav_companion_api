@@ -59,6 +59,8 @@ class MarkerPose(TargetTracker, Utils, CameraPose):
         self.update_coeffs = update_coeffs # List in meters
         self.ground_clearance = ground_clearance
 
+        self.range = None
+
     def callback_cam_info(self, data):
 
         self.distortion_params = data.D
@@ -77,6 +79,9 @@ class MarkerPose(TargetTracker, Utils, CameraPose):
 
 
     def retrieve_frame(self, data):
+        if self.range == None:
+            return
+
         self.raw_image = super().ros2cv2(data, encoding="bgr8") 
         self.box, self.id = super().detect_marker(self.raw_image)
 
