@@ -82,6 +82,8 @@ class MarkerPose(TargetTracker, Utils, CameraPose):
             return
 
         self.raw_image = super().ros2cv2(data, encoding="bgr8") 
+        self.raw_image = Utils().adjust_brightness_contrast(self.raw_image, alpha=1, beta=0) ####
+        self.raw_image = Utils().adjust_gamma(self.raw_image, gamma=0.5)                     ####
         self.box, self.id = super().detect_marker(self.raw_image)
 
         try:
