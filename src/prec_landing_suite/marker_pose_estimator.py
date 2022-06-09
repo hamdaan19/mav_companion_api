@@ -29,8 +29,8 @@ class MarkerPose(TargetTracker, Utils, CameraPose):
 
         super(MarkerPose, self).__init__()
         self.setpoint_pub = rospy.Publisher("/mavros/setpoint_raw/local", PositionTarget, queue_size=5)
-        self.range_sub = rospy.Subscriber(distance_sensor_topic, LaserScan, self.get_range)
-        #self.range_sub = rospy.Subscriber(distance_sensor_topic, Range, self.get_range)
+        #self.range_sub = rospy.Subscriber(distance_sensor_topic, LaserScan, self.get_range)
+        self.range_sub = rospy.Subscriber(distance_sensor_topic, Range, self.get_range)
         self.sub1 = rospy.Subscriber(raw_image_topic, Image, self.retrieve_frame)
         self.sub_cam_info = rospy.Subscriber(cam_info, CameraInfo, self.callback_cam_info)
         self.sub3 = rospy.Subscriber("/mavros/local_position/pose", PoseStamped, self.get_pose)
@@ -40,11 +40,12 @@ class MarkerPose(TargetTracker, Utils, CameraPose):
         self.raw_image = None
         self.u_o = 160 # None camera center X ###############
         self.v_o = 120 # None camera center Y ###############
+        self.range = None        
 
         self.marker_ID = marker_id
         self.once = True
         self.AUTO_LAND = False
-        self.max_land_alt = 5.4
+        self.max_land_alt = 5.5
 
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
@@ -77,6 +78,9 @@ class MarkerPose(TargetTracker, Utils, CameraPose):
 
 
     def retrieve_frame(self, data):
+        if self.range == None:
+            return
+
         self.raw_image = super().ros2cv2(data, encoding="bgr8") 
         self.box, self.id = super().detect_marker(self.raw_image)
 
@@ -86,6 +90,7 @@ class MarkerPose(TargetTracker, Utils, CameraPose):
                     point = super().find_center(self.box, self.id, frame=self.raw_image, draw=True)
                     self.u, self.v = point[self.marker_ID]
                     self.prec_land_pipeline()
+                    rospy.loginfo("Marker Detected")
                 else: 
                     rospy.loginfo("Marker with ID \'{0}\' is not detected".format(self.marker_ID))
                     # Here goes the code for the case where
@@ -109,7 +114,7 @@ class MarkerPose(TargetTracker, Utils, CameraPose):
             rospy.logerr("Variable \'self.range\' not yet defined.")
         
         #### Comment the line below while running on offboard CPU ####
-        super().display_image(["iris_raw_image"], [self.raw_image])
+        #super().display_image(["iris_raw_image"], [self.raw_image])
         
 
     def prec_land_pipeline(self):
@@ -139,8 +144,8 @@ class MarkerPose(TargetTracker, Utils, CameraPose):
         self.current_rotW = data.pose.orientation.w
 
     def get_range(self, data):
-        self.range = data.ranges[0]
-        #self.range = data.range
+        #self.range = data.ranges[0]
+        self.range = data.range
 
     def get_uav_state(self, data):
         self.conn_status = data.connected
@@ -153,7 +158,7 @@ class MarkerPose(TargetTracker, Utils, CameraPose):
         # Z = -depth
 
         points, pixels = super().undistort_point(
-            [[u, v, depth]], self.u_o, self.v_o, self.fx, self.fy, self.distortion_params)
+            [[u, v, depth]], self.cx, self.cy, self.fx, self.fy, self.distortion_params)
         vertex_pts = np.squeeze(np.array(self.box, dtype=np.float32))
         vertex_pts_3d = np.append(vertex_pts, np.array([[depth,depth,depth,depth]]).T, axis=1)
     
@@ -202,14 +207,11 @@ class MarkerPose(TargetTracker, Utils, CameraPose):
         rospy.logwarn("ENGAGING PRECISION LANDING")
         while not rospy.core.is_shutdown():
             if self.AUTO_LAND == False:
-                try:
-                    if(self.current_mode != "OFFBOARD"):
-                        self.set_mode(0, "OFFBOARD")
-                except:
-                    pass
+                #print(".")  
                 self.setpoint_pub.publish(self.setpoint_msg)
             try:
                 if self.range < self.ground_clearance:
+                    rospy.loginfo("Ground clearance too less. Landing.")
                     break
             except:
                 pass

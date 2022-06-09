@@ -9,7 +9,7 @@ import yaml
 
 if __name__ == "__main__":
     bridge = CvBridge()
-    vid = cv2.VideoCapture(2) # define a video capture object
+    vid = cv2.VideoCapture(0, cv2.CAP_V4L2) # define a video capture object
 
     rospy.init_node("down_cam_node", anonymous=False)
     stream_pub = rospy.Publisher("uav/downward_cam/image_raw", Image, queue_size=5)
@@ -17,7 +17,7 @@ if __name__ == "__main__":
 
     rate = rospy.Rate(30)
 
-    with open("/home/hamdaan/ROS/px4_ws/src/mav_companion_api/data/econ_cam1.yaml", "r") as file_handle:
+    with open("/home/nx1/prec_landing_ws/src/mav_companion_api/data/econ_cam1.yaml", "r") as file_handle:
         calib_data = yaml.load(file_handle, Loader=yaml.FullLoader)
     camera_info_msg = CameraInfo()
     camera_info_msg.width = calib_data["image_width"]

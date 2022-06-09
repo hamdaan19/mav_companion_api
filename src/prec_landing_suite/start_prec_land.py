@@ -12,16 +12,16 @@ GOTO_INIT_POINT = True
 RANDOM_POINT = False
 ENGAGE_PREC_LANDING = True
 
-RAW_IMAGE_TOPIC = "/iris/usb_cam/image_raw"
-CAM_INFO = "/iris/usb_cam/camera_info"
-DIST_SENSOR_TOPIC = "/iris/laser/range"
+RAW_IMAGE_TOPIC = "/uav/downward_cam/image_raw"
+CAM_INFO = "/uav/downward_cam/camera_info"
+DIST_SENSOR_TOPIC = "/mavros/distance_sensor/lightware_lw20_pub"
 MARKER_ID = 70
-# GROUND_CLEARANCE = 0.3 # 0.26
+GROUND_CLEARANCE = 0.3 # 0.26
 # UPDATE_COEFFICIENTS = [1,1,0.3]
 
 PUB_TOPIC_GOTO_POINT = "/mavros/setpoint_raw/local"
 UAV_STATE_TOPIC = "mavros/state"
-INIT_POINT = [3, 3, 20] 
+INIT_POINT = [3, 3, 3] 
 
 def state_callback(data):
     global conn_status 
@@ -92,7 +92,7 @@ def main():
             distance_sensor_topic=DIST_SENSOR_TOPIC,
             init_point=INIT_POINT,
             marker_id=MARKER_ID,
-            #ground_clearance=GROUND_CLEARANCE,
+            ground_clearance=GROUND_CLEARANCE,
             #update_coeffs=UPDATE_COEFFICIENTS,
             )
         start_prec_land.loop()

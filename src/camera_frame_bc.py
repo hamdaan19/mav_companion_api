@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-from re import X
-from vine import transform
 import rospy
 import tf, tf.msg
 import tf2_ros
@@ -35,9 +33,9 @@ def broadcast_camera_frame():
     static_transformStamped.header.frame_id = "base_link"
     static_transformStamped.child_frame_id = "/robot_camera_link"
 
-    static_transformStamped.transform.translation.x = -0.158979
-    static_transformStamped.transform.translation.y = -0.04405
-    static_transformStamped.transform.translation.z = 0.045074
+    static_transformStamped.transform.translation.x = 0
+    static_transformStamped.transform.translation.y = 0
+    static_transformStamped.transform.translation.z = -0.19
 
     #q = quaternion_from_euler(0, 1.57142857143, 0)
     q = quaternion_from_euler(0, 0, 1.57142857143*2)
