@@ -84,6 +84,8 @@ def main():
 def get_frame(data):
     global marker_detected
     raw_image = Utils().ros2cv2(data, encoding="bgr8")
+    raw_image = Utils().adjust_brightness_contrast(raw_image, alpha=1, beta=0) ####
+    raw_image = Utils().adjust_gamma(raw_image, gamma=0.5)                     ####
     box, id = TargetTracker().detect_marker(image=raw_image)
     marker_detected = np.any(id)
 
