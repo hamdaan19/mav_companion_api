@@ -45,7 +45,7 @@ class MarkerPose(TargetTracker, Utils, CameraPose):
         self.marker_ID = marker_id
         self.once = True
         self.AUTO_LAND = False
-        self.max_land_alt = 5.5
+        self.max_land_alt = 1.1
 
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
