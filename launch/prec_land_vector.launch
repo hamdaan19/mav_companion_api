@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <launch>
-    <arg name="fcu_url" default="udp://:14540@127.0.0.1:14557"/>
-    <arg name="gcs_url" defautl=""/>
-   <!-- <include file="$(find mavros)/launch/px4.launch">
+    <arg name="fcu_url" default=""/>
+    <arg name="gcs_url" default=""/>
+   <include file="$(find mavros)/launch/px4.launch">
         <arg name="fcu_url" value="$(arg fcu_url)"/>
-        <arg name="gcs_url" value=""/>
-    </include> -->
+        <arg name="gcs_url" value="$(arg gcs_url)"/>
+    </include>
 
     <node name="precision_lander" pkg="mav_companion_api" type="pilot_engaged_prec_landing.py" output="screen"/>
     <node name="tf_camera_broadcaster" pkg="mav_companion_api" type="camera_frame_bc.py" output="log"/>
