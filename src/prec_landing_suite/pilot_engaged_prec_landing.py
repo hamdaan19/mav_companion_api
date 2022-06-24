@@ -11,7 +11,7 @@ from utils import create_setpoint_message, TargetTracker, Utils
 RAW_IMAGE_TOPIC = "/uav/downward_cam/image_raw"
 CAM_INFO = "/uav/downward_cam/camera_info"
 DIST_SENSOR_TOPIC = "/mavros/distance_sensor/lightware_lw20_pub"
-MARKER_ID = 320
+MARKER_ID = 41
 GROUND_CLEARANCE = 0.3 # 0.26
 #UPDATE_COEFFICIENTS = [0.3,0.3,0.75]
 
@@ -20,7 +20,6 @@ UAV_STATE_TOPIC = "mavros/state"
 INIT_POINT = [-2.4, -6.6, 3] 
 ENGAGE_PREC_LANDING = True
 marker_detected = False
-HCP = True
 
 def state_callback(data):
     global conn_status
@@ -32,7 +31,7 @@ def state_callback(data):
 
 
 def main():
-    HCP = True
+    HOLD_CURRENT_POSITION = True
     rate = rospy.Rate(20)
     while(conn_status == False and (not rospy.core.is_shutdown())):
         rospy.loginfo("Waiting for connection...")
@@ -97,8 +96,6 @@ def pose_cb(data):
     posZ = data.pose.position.z
 
 if __name__ == "__main__":
-    global HOLD_CURRENT_POSITION
-    HOLD_CURRENT_POSITION = True
     rospy.init_node("Wait_for_offboard_node", anonymous=False)
     state_sub = rospy.Subscriber(UAV_STATE_TOPIC, State, state_callback)
     pub = rospy.Publisher(PUB_TOPIC_GOTO_POINT, PositionTarget, queue_size=5)

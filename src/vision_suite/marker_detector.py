@@ -14,7 +14,7 @@ sys.path.insert(1, rp.get_path("mav_companion_api"))
 
 from src.prec_landing_suite.utils import Utils, TargetTracker
 
-MARKER_ID = 320
+MARKER_ID = 41
 bridge = CvBridge()
 
 def callback(data):
