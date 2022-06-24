@@ -42,7 +42,7 @@ def main():
     setpoint_msg.position.z = INIT_POINT[2]
 
     while not rospy.core.is_shutdown():
-        if HCP == True:
+        if HOLD_CURRENT_POSITION == True:
             try: 
                 setpoint_msg.position.x = posX
                 setpoint_msg.position.y = posY
