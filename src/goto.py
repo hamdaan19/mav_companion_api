@@ -9,7 +9,7 @@ import time
 PUB_TOPIC = "/mavros/setpoint_raw/local"
 STATE_TOPIC = "mavros/state"
 
-GOTO_POINT = [0, 5, 10] # [X, Y, Z]
+GOTO_POINT = [0, 1, 1] # [X, Y, Z]
 
 def state_callback(data):
     global conn_status 
