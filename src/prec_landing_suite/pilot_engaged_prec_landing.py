@@ -20,7 +20,7 @@ UAV_STATE_TOPIC = "mavros/state"
 INIT_POINT = [-2.4, -6.6, 3] 
 ENGAGE_PREC_LANDING = True
 marker_detected = False
-HOLD_CURRENT_POSITION = True
+HCP = True
 
 def state_callback(data):
     global conn_status
@@ -32,6 +32,7 @@ def state_callback(data):
 
 
 def main():
+    HCP = True
     rate = rospy.Rate(20)
     while(conn_status == False and (not rospy.core.is_shutdown())):
         rospy.loginfo("Waiting for connection...")
@@ -42,7 +43,7 @@ def main():
     setpoint_msg.position.z = INIT_POINT[2]
 
     while not rospy.core.is_shutdown():
-        if HOLD_CURRENT_POSITION == True:
+        if HCP == True:
             try: 
                 setpoint_msg.position.x = posX
                 setpoint_msg.position.y = posY
@@ -64,7 +65,7 @@ def main():
         if ((current_mode == "OFFBOARD") & ENGAGE_PREC_LANDING ):
             break
         elif (current_mode == "OFFBOARD"):
-            HOLD_CURRENT_POSITION = False
+            HCP = False
 
         rospy.rostime.wallsleep(1/10)
     
@@ -84,8 +85,8 @@ def main():
 def get_frame(data):
     global marker_detected
     raw_image = Utils().ros2cv2(data, encoding="bgr8")
-    raw_image = Utils().adjust_brightness_contrast(raw_image, alpha=1, beta=0) ####
-    raw_image = Utils().adjust_gamma(raw_image, gamma=0.5)                     ####
+    # raw_image = Utils().adjust_brightness_contrast(raw_image, alpha=1, beta=0) ####
+    # raw_image = Utils().adjust_gamma(raw_image, gamma=0.5)                     ####
     box, id = TargetTracker().detect_marker(image=raw_image)
     marker_detected = np.any(id)
 
@@ -96,6 +97,8 @@ def pose_cb(data):
     posZ = data.pose.position.z
 
 if __name__ == "__main__":
+    global HOLD_CURRENT_POSITION
+    HOLD_CURRENT_POSITION = True
     rospy.init_node("Wait_for_offboard_node", anonymous=False)
     state_sub = rospy.Subscriber(UAV_STATE_TOPIC, State, state_callback)
     pub = rospy.Publisher(PUB_TOPIC_GOTO_POINT, PositionTarget, queue_size=5)

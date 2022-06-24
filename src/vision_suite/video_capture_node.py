@@ -9,7 +9,8 @@ import yaml
 
 if __name__ == "__main__":
     bridge = CvBridge()
-    vid = cv2.VideoCapture(0, cv2.CAP_V4L2) # define a video capture object
+    #vid = cv2.VideoCapture(0, cv2.CAP_V4L2) # define a video capture object
+    vid = cv2.VideoCapture(0)
 
     rospy.init_node("down_cam_node", anonymous=False)
     stream_pub = rospy.Publisher("uav/downward_cam/image_raw", Image, queue_size=5)
