@@ -64,7 +64,7 @@ def main():
         if ((current_mode == "OFFBOARD") & ENGAGE_PREC_LANDING ):
             break
         elif (current_mode == "OFFBOARD"):
-            HCP = False
+            HOLD_CURRENT_POSITION = False
 
         rospy.rostime.wallsleep(1/10)
     
