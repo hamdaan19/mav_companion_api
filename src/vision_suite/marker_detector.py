@@ -15,6 +15,8 @@ sys.path.insert(1, rp.get_path("mav_companion_api"))
 
 from src.prec_landing_suite.utils import Utils, TargetTracker
 
+SAVE_VIDEO = True
+
 MARKER_ID = 41
 bridge = CvBridge()
 
@@ -48,6 +50,8 @@ def callback(data):
 
     
     # cv2.imshow("Undistorted Image", undistorted_img)
+    if SAVE_VIDEO:
+        out.write(cv_image)
     cv2.imshow("Marker Detector", cv_image)
     cv2.waitKey(1)
 
@@ -77,4 +81,9 @@ if __name__ == "__main__":
     rospy.Subscriber("uav/downward_cam/image_raw", Image, callback)
     rospy.Subscriber("uav/downward_cam/camera_info", CameraInfo, callback_cam_info)
 
+    if SAVE_VIDEO:
+        fps = 24
+        out = cv2.VideoWriter("out.mp4", cv2.VideoWriter_fourcc(*'XVID'), fps, (480, 300))
+
     rospy.spin()
+    out.release()
