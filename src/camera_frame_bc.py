@@ -38,9 +38,9 @@ def broadcast_camera_frame():
     static_transformStamped.transform.translation.z = -0.19
 
     #q = quaternion_from_euler(0, 1.57142857143, 0)
-    #q = quaternion_from_euler(0, 0, 1.57142857143*1)
-    q = quaternion_from_euler(0, 0, 1.57142857143*2)
-    #q = quaternion_from_euler(0, 0, 1.57142857143*3)
+    #q = quaternion_from_euler(0, 1.57142857143*2, 1.57142857143*1)
+    q = quaternion_from_euler(0, 1.57142857143*2, 1.57142857143*2)
+    #q = quaternion_from_euler(0, 1.57142857143*2, 1.57142857143*3)
 
     static_transformStamped.transform.rotation.x = q[0]
     static_transformStamped.transform.rotation.y = q[1]
