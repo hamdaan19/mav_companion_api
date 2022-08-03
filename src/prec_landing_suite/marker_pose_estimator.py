@@ -24,7 +24,7 @@ class MarkerPose(TargetTracker, Utils, CameraPose):
             distance_sensor_topic, 
             init_point, 
             marker_id, 
-            update_coeffs=[1,1,0.3],
+            update_coeffs=[0.8,0.8,0.15],
             ground_clearance=0.15):
 
         super(MarkerPose, self).__init__()

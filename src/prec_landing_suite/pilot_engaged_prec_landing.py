@@ -13,7 +13,7 @@ CAM_INFO = "/uav/downward_cam/camera_info"
 DIST_SENSOR_TOPIC = "/mavros/distance_sensor/lightware_lw20_pub"
 MARKER_ID = 41
 GROUND_CLEARANCE = 0.3 # 0.26
-#UPDATE_COEFFICIENTS = [0.3,0.3,0.75]
+#UPDATE_COEFFICIENTS = [0.15,0.15,0.35]
 
 PUB_TOPIC_GOTO_POINT = "/mavros/setpoint_raw/local"
 UAV_STATE_TOPIC = "mavros/state"
