@@ -36,6 +36,7 @@ class MarkerPose(TargetTracker, Utils, CameraPose):
         self.sub3 = rospy.Subscriber("/mavros/local_position/pose", PoseStamped, self.get_pose)
         self.state_sub = rospy.Subscriber("/mavros/state", State, self.get_uav_state)
         self.set_mode = rospy.ServiceProxy("/mavros/set_mode", SetMode)
+        self.goal_marker_point_pub = rospy.Publisher("/map/marker_location/goal", Point, queue_size=4)
         
         self.raw_image = None
         self.u_o = 160 # None camera center X ###############
@@ -188,6 +189,7 @@ class MarkerPose(TargetTracker, Utils, CameraPose):
             transformation
             ).point
         
+        self.goal_marker_point_pub(point_wrt_map_frame)
         return [point_wrt_map_frame.x, point_wrt_map_frame.y, point_wrt_map_frame.z]
 
     def compute_path_vector(self, current, goal):
