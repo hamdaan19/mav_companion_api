@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   message_generation
+  ompl
 )
 
 ## System dependencies are found with CMake's conventions
@@ -120,6 +121,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${OMPL_INCLUDE_DIRS}
   ${PROJECT_SOURCE_DIR}/include
+  ${Boost_INCLUDE_DIR}
 )
 
 ## Declare a C++ executable
@@ -128,6 +130,12 @@ include_directories(
 add_executable(
   trajPlanner
   src/prec_landing_suite/traj_planner.cpp
+)
+
+target_link_libraries(
+    trajPlanner
+    ${OMPL_LIBRARIES}
+    ${catkin_LIBRARIES}
 )
 
 ## Declare a C++ library
