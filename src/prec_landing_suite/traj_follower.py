@@ -1,12 +1,14 @@
 #!/usr/bin/env python
+from urllib import response
 import rospy
 import rospkg
 from sensor_msgs.msg import Image, LaserScan, CameraInfo, Range
 from geometry_msgs.msg import Point, PointStamped, PoseStamped
 from trajectory_msgs.msg import MultiDOFJointTrajectory, MultiDOFJointTrajectoryPoint
-from utils import TargetTracker, Utils, create_setpoint_message
+from utils import TargetTracker, Utils, create_setpoint_message, get_distance
 from mavros_msgs.msg import PositionTarget, State
 from mavros_msgs.srv import SetMode
+from mav_companion_api.srv import TrajPlanner
 import numpy as np
 import tf2_ros
 import tf2_geometry_msgs
@@ -37,6 +39,7 @@ class MarkerPose(TargetTracker, Utils, CameraPose):
         self.sub3 = rospy.Subscriber("/mavros/local_position/pose", PoseStamped, self.get_pose)
         self.state_sub = rospy.Subscriber("/mavros/state", State, self.get_uav_state)
         self.set_mode = rospy.ServiceProxy("/mavros/set_mode", SetMode)
+        self.traj_planner_srv = rospy.ServiceProxy('trajectory_planner', TrajPlanner)
         self.goal_marker_point_pub = rospy.Publisher("/map/marker_location/goal", Point, queue_size=4)
         #self.traj_sub = rospy.Subscriber()
         
@@ -64,6 +67,13 @@ class MarkerPose(TargetTracker, Utils, CameraPose):
 
         self.range = None
 
+        self.waypoint_reached = False
+        self.waypoint_idx = 0
+        self.plan_new_traj = True
+        self.srv_resp = None # Starts landing execution only after first trajectory is planned
+
+        self.once = True
+
     def callback_cam_info(self, data):
 
         self.distortion_params = data.D
@@ -88,33 +98,34 @@ class MarkerPose(TargetTracker, Utils, CameraPose):
         self.raw_image = super().ros2cv2(data, encoding="bgr8") 
         self.box, self.id = super().detect_marker(self.raw_image)
 
-        try:
-            if self.range > self.max_land_alt:
-                if (np.any(self.id) and (self.marker_ID in self.id)): 
-                    point = super().find_center(self.box, self.id, frame=self.raw_image, draw=True)
-                    self.u, self.v = point[self.marker_ID]
-                    self.prec_land_pipeline()
-                else: 
-                    rospy.loginfo("Marker with ID \'{0}\' is not detected".format(self.marker_ID))
-                    # Here goes the code for the case where
-                    # the drone does not detect any marker 
-                    # and it is not anywhere close to the ground.
-                    # Ideally the framework should identify flat
-                    # ground suitable for landing and make a slow 
-                    # descent. 
-                    pass
-            else:
-                # Before setting to AUTO.LAND, check whether
-                # the ground beneath is suitable for landing.
-                # Also, check if any portion of the marker is
-                # visible underneath the UAV.
-                if self.once == True: 
-                    result = self.set_mode(0, "AUTO.LAND")
-                    rospy.loginfo("PX4 mode set to AUTO.LAND")
-                    self.AUTO_LAND = True
-                    self.once = False
-        except:
-            rospy.logerr("Variable \'self.range\' not yet defined.")
+        # try:
+        if self.range > self.max_land_alt:
+            if ((np.any(self.id) and (self.marker_ID in self.id)) and self.once): 
+                point = super().find_center(self.box, self.id, frame=self.raw_image, draw=True)
+                self.u, self.v = point[self.marker_ID]
+                self.prec_land_pipeline()
+                #self.once = False
+            else: 
+                rospy.loginfo("Marker with ID \'{0}\' is not detected".format(self.marker_ID))
+                # Here goes the code for the case where
+                # the drone does not detect any marker 
+                # and it is not anywhere close to the ground.
+                # Ideally the framework should identify flat
+                # ground suitable for landing and make a slow 
+                # descent. 
+                pass
+        else:
+            # Before setting to AUTO.LAND, check whether
+            # the ground beneath is suitable for landing.
+            # Also, check if any portion of the marker is
+            # visible underneath the UAV.
+            if self.once == True: 
+                result = self.set_mode(0, "AUTO.LAND")
+                rospy.loginfo("PX4 mode set to AUTO.LAND")
+                self.AUTO_LAND = True
+                self.once = False
+        # except:
+        #     rospy.logerr("Variable \'self.range\' not yet defined.")
         
         #### Comment the line below while running on offboard CPU ####
         super().display_image(["iris_raw_image"], [self.raw_image])
@@ -126,11 +137,13 @@ class MarkerPose(TargetTracker, Utils, CameraPose):
         if tf_map_to_cam != None:
             point_wrt_map = self.transform_point(tf_map_to_cam, Point(cam_frame_X, cam_frame_Y, cam_frame_Z))
             self.marker_loc_list.append(point_wrt_map)
-            next_point = self.compute_path_vector([self.current_x, self.current_y, self.current_z], point_wrt_map)
-            self.update_setpoint_msg(next_point)
+
+            self.plan_trajectory(point_wrt_map)
+
+            #self.update_setpoint_msg(next_point)
             self.mean, self.std_error, self.std_per_error, self.std_dev = super().get_mean_uncertainty(np.array(self.marker_loc_list))
-            rospy.loginfo(
-                "MARKER POSITION ESTIMATE\nMean:{0} | Uncertainty (m):{1}".format(self.mean, self.std_dev))
+            #rospy.loginfo(
+            #    "MARKER POSITION ESTIMATE\nMean:{0} | Uncertainty (m):{1}".format(self.mean, self.std_dev))
         else:
             rospy.logerr(
                 "Unable to find transform between \"{}\" and \"{}\"".format(self.map_frame, self.camera_frame)
@@ -141,10 +154,15 @@ class MarkerPose(TargetTracker, Utils, CameraPose):
         self.current_x = data.pose.position.x
         self.current_y = data.pose.position.y
         self.current_z = data.pose.position.z
+        if (self.range is not None): 
+            self.current_z = self.range
         self.current_rotX = data.pose.orientation.x
         self.current_rotY = data.pose.orientation.y
         self.current_rotZ = data.pose.orientation.z
         self.current_rotW = data.pose.orientation.w
+
+        self.pass_waypoints()
+
 
     def get_range(self, data):
         self.range = data.ranges[0]
@@ -156,23 +174,11 @@ class MarkerPose(TargetTracker, Utils, CameraPose):
         self.armed = data.armed
 
     def pose_estimator_rel_to_cam(self, depth, u, v):
-        # Y = (u - self.u_o) * depth / self.focal_length
-        # X = (v - self.v_o) * depth / self.focal_length
-        # Z = -depth
 
         points, pixels = super().undistort_point(
             [[u, v, depth]], self.u_o, self.v_o, self.fx, self.fy, self.distortion_params)
         vertex_pts = np.squeeze(np.array(self.box, dtype=np.float32))
         vertex_pts_3d = np.append(vertex_pts, np.array([[depth,depth,depth,depth]]).T, axis=1)
-    
-        # corrected_pts, corrected_pixels = super().undistort_point(
-        #     vertex_pts_3d, self.u_o, self.v_o, self.fx, self.fy, self.distortion_params)
-        # #print(vertex_pts, corrected_pixels)
-
-        # rvec, tvec = super().estimate_pose(
-        #     np.array(corrected_pixels, dtype=np.float32), publish=False, cam_mtx=self.cam_mtx, distortion_params=self.distortion_params)
-        # tvec = np.squeeze(np.array(tvec).T)
-        # X_est, Y_est, Z_est = tvec 
 
         return [points[0][0], points[0][1], -depth]
     
@@ -194,12 +200,43 @@ class MarkerPose(TargetTracker, Utils, CameraPose):
         self.goal_marker_point_pub.publish(point_wrt_map_frame)
         return [point_wrt_map_frame.x, point_wrt_map_frame.y, point_wrt_map_frame.z]
 
-    def compute_path_vector(self, current, goal):
-        vector = np.array(goal) - np.array(current)
-        unit_vector = vector / np.linalg.norm(vector)
-        unit_vector = np.multiply(unit_vector,np.array(self.update_coeffs))
-        next_point = current+unit_vector
-        return next_point
+
+    def plan_trajectory(self, point_wrt_map):
+        if (not self.plan_new_traj): 
+            return
+        try: 
+            self.srv_resp = self.traj_planner_srv(Point(self.current_x, self.current_y, self.current_z), 
+                                                  Point(point_wrt_map[0], point_wrt_map[1], point_wrt_map[2]+self.max_land_alt-0.8))
+            rospy.loginfo("New trajectory planned.")
+            self.plan_new_traj = False
+            self.waypoint_idx = 0
+        except rospy.ServiceException as e:
+            print("Service call failed: %s"%e)
+            
+
+    def pass_waypoints(self):
+        if (self.srv_resp is not None):
+            pt = []
+            pt.append(self.srv_resp.trajectory.points[self.waypoint_idx].transforms[0].translation.x)
+            pt.append(self.srv_resp.trajectory.points[self.waypoint_idx].transforms[0].translation.y)
+            pt.append(self.srv_resp.trajectory.points[self.waypoint_idx].transforms[0].translation.z)
+            print(pt)
+            self.update_setpoint_msg(pt)
+            dist = get_distance(pt, [self.current_x, self.current_y, self.current_z])
+            print(dist)
+            if (dist < 0.1): # Checks if waypoint has been reached
+
+                # Following if-else block checks 
+                if (self.waypoint_idx >= len(self.srv_resp.trajectory.points)):
+                    pass
+                else: 
+                    self.waypoint_idx += 1
+
+                if (self.waypoint_idx > 10): 
+                    self.plan_new_traj = True
+        else:
+            rospy.logwarn("First Trajectory has not been planned yet.")
+
 
     def update_setpoint_msg(self, point):
         self.setpoint_msg.position.x = point[0]

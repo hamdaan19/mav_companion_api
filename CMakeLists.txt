@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0.2)
 project(mav_companion_api)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++14)
+add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -13,12 +13,17 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  geometry_msgs
+  trajectory_msgs
   message_generation
   ompl
 )
 
 ## System dependencies are found with CMake's conventions
 find_package(ompl REQUIRED)
+find_package(Eigen3 3.1.0 REQUIRED NO_MODULE)
+find_package(nlopt REQUIRED)
+find_package(GSL REQUIRED)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -56,11 +61,10 @@ find_package(ompl REQUIRED)
 #)
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(
+  FILES
+  TrajPlanner.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -70,10 +74,12 @@ find_package(ompl REQUIRED)
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs
-# )
+generate_messages(
+  DEPENDENCIES
+  geometry_msgs
+  trajectory_msgs
+  std_msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -117,26 +123,62 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
+
+set(PYTHON_INCLUDE_DIR "/usr/include/python3.8")
+
 include_directories(
   ${catkin_INCLUDE_DIRS}
   ${OMPL_INCLUDE_DIRS}
   ${PROJECT_SOURCE_DIR}/include
   ${Boost_INCLUDE_DIR}
+  ${EIGEN3_INCLUDE_DIR}
+  ${NLOPT_INCLUDE_DIRS}
+  ${GSL_INCLUDE_DIRS}
+  ${PYTHON_INCLUDE_DIR}
 )
+
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
+
 add_executable(
-  trajPlanner
+  trajPlannerServer
   src/prec_landing_suite/traj_planner.cpp
+  src/prec_landing_suite/traj_planner_server.cpp
+  src/prec_landing_suite/BSpline.cpp
+  src/prec_landing_suite/TrajOpt.cpp
 )
 
 target_link_libraries(
-    trajPlanner
+    trajPlannerServer
     ${OMPL_LIBRARIES}
     ${catkin_LIBRARIES}
+    ${EIGEN3_LIBS}
+    ${NLOPT_LIBRARIES}
+    -lnlopt
+    -lm
+    -lgsl 
+    -lgslcblas
+    -lpython3.8
 )
+
+add_dependencies(trajPlannerServer mav_companion_api_gencpp)
+
+add_executable(
+  spline
+  src/prec_landing_suite/spline.cpp
+)
+
+target_link_libraries(
+  spline
+  ${catkin_LIBRARIES}
+  ${EIGEN3_LIBS}
+  -lm
+  -lpython3.8
+)
+
+add_dependencies(spline mav_companion_api_gencpp)
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
