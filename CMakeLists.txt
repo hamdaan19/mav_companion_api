@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   geometry_msgs
   trajectory_msgs
+  mavros_msgs
   message_generation
   ompl
 )
@@ -78,6 +79,7 @@ generate_messages(
   DEPENDENCIES
   geometry_msgs
   trajectory_msgs
+  mavros_msgs
   std_msgs
 )
 
@@ -180,6 +182,20 @@ target_link_libraries(
 
 add_dependencies(spline mav_companion_api_gencpp)
 
+add_executable(
+  poly
+  src/prec_landing_suite/poly.cpp
+)
+
+target_link_libraries(
+  poly
+  ${catkin_LIBRARIES}
+  ${EIGEN3_LIBS}
+  -lgsl 
+  -lgslcblas
+)
+
+add_dependencies(poly mav_companion_api_gencpp)
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/mav_companion_api.cpp
